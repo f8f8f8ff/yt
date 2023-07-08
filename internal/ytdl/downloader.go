@@ -12,12 +12,14 @@ type Downloader struct {
 	flags []string
 }
 
-func (d *Downloader) Video(url string) (string, error) {
-	flags := append(d.flags, []string{
+func (d *Downloader) download(url string, extraflags ...string) (string, error) {
+	defaultflags := []string{
 		"--quiet",
 		"--print", "filename",
-		url,
-	}...)
+	}
+	flags := append(d.flags, extraflags...)
+	flags = append(flags, defaultflags...)
+	flags = append(flags, url)
 	cmd := exec.Command(d.cmd, flags...)
 	var (
 		stdout strings.Builder
@@ -31,4 +33,25 @@ func (d *Downloader) Video(url string) (string, error) {
 	}
 	path := strings.TrimSuffix(stdout.String(), "\n")
 	return path, err
+}
+
+func (d *Downloader) Video(url string) (string, error) {
+	return d.download(url)
+}
+
+func (d *Downloader) Audio(url string) (string, error) {
+	flags := []string{
+		"-x",
+		"--audio-format",
+		"mp3",
+	}
+	path, err := d.download(url, flags...)
+	if err != nil {
+		return path, err
+	}
+	m := idPathRegexp.FindStringSubmatch(path)
+	// trim original format suffix
+	path = strings.TrimSuffix(path, m[2])
+	path = path + "mp3"
+	return path, nil
 }
