@@ -8,6 +8,7 @@ func TestDownloader_Video(t *testing.T) {
 		flags: []string{
 			"--simulate",
 		},
+		dir: "/tmp/ytdl",
 	}
 	type args struct {
 		url string
@@ -55,6 +56,7 @@ func TestDownloader_Audio(t *testing.T) {
 		flags: []string{
 			"--simulate",
 		},
+		dir: "/tmp/ytdl",
 	}
 	type args struct {
 		url string

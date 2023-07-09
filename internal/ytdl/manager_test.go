@@ -5,6 +5,28 @@ import (
 	"testing"
 )
 
+func Test_Manager_GetVideo(t *testing.T) {
+	m := Manager{
+		files: map[string]*file{},
+		downloader: Downloader{
+			cmd: "yt-dlp",
+			flags: []string{
+				"--simulate",
+			},
+			dir: "./tmp/ytdl",
+		},
+	}
+	url := "https://www.youtube.com/watch?v=sCNj0WMBkrs"
+	want := "The Epic Battle： Jesus vs Cyborg Satan [sCNj0WMBkrs].webm"
+	got, err := m.GetVideo(url)
+	if err != nil {
+		t.Errorf("Manager.GetVideo() error = %v", err)
+	}
+	if got != want {
+		t.Fatalf("Manager.GetVideo() = %v, want %v", got, want)
+	}
+}
+
 func Test_getId(t *testing.T) {
 	urls := []string{
 		"https://youtube.com/shorts/dQw4w9WgXcQ?feature=share",
@@ -34,7 +56,7 @@ func Test_getId(t *testing.T) {
 	}
 	for _, url := range urls {
 		t.Run(url, func(t *testing.T) {
-			got, err := getId(url)
+			got, err := idFromUrl(url)
 			if err != nil {
 				t.Errorf("getId() error = %v", err)
 			}
