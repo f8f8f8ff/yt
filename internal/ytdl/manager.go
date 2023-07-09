@@ -2,20 +2,29 @@ package ytdl
 
 import (
 	"errors"
-	"net/http"
 	"regexp"
 )
 
-type file struct {
+type File struct {
 	id     string
 	format string
 	path   string
 }
 
 type Manager struct {
-	downloader Downloader
-	files      map[string]*file
-	Fs         managerFileSystem
+	Downloader Downloader
+	Files      map[string]*File
+}
+
+func NewManager() *Manager {
+	return &Manager{
+		Downloader: Downloader{
+			Cmd:   "yt-dlp",
+			Flags: []string{},
+			Dir:   "./tmp/",
+		},
+		Files: map[string]*File{},
+	}
 }
 
 // returns the path to a downloaded youtube video by its url
@@ -25,7 +34,7 @@ func (m *Manager) GetVideo(url string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	file := m.files[id+"/v"]
+	file := m.Files[id+"/v"]
 	if file == nil {
 		// download video
 		file, err = m.DownloadVideo(url)
@@ -37,8 +46,8 @@ func (m *Manager) GetVideo(url string) (string, error) {
 	return file.path, nil
 }
 
-func (m *Manager) DownloadVideo(url string) (*file, error) {
-	path, err := m.downloader.Video(url)
+func (m *Manager) DownloadVideo(url string) (*File, error) {
+	path, err := m.Downloader.Video(url)
 	if err != nil {
 		return nil, err
 	}
@@ -46,7 +55,7 @@ func (m *Manager) DownloadVideo(url string) (*file, error) {
 	if err != nil {
 		return nil, err
 	}
-	m.files[f.id+"/v"] = f
+	m.Files[f.id+"/v"] = f
 	return f, nil
 }
 
@@ -67,26 +76,14 @@ func idFromUrl(url string) (string, error) {
 	return match[1], nil
 }
 
-func fileFromPath(path string) (*file, error) {
+func fileFromPath(path string) (*File, error) {
 	match := idPathRegexp.FindStringSubmatch(path)
 	if len(match) < 2 {
 		return nil, errors.New("couldn't get id from path")
 	}
-	return &file{
+	return &File{
 		id:     match[1],
 		path:   path,
 		format: match[2],
 	}, nil
-}
-
-type managerFileSystem struct {
-	fs http.FileSystem
-}
-
-func (mfs managerFileSystem) Open(name string) (http.File, error) {
-	f, err := mfs.fs.Open(name)
-	if err != nil {
-		return nil, err
-	}
-	return f, nil
 }

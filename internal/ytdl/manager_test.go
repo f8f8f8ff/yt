@@ -7,13 +7,13 @@ import (
 
 func Test_Manager_GetVideo(t *testing.T) {
 	m := Manager{
-		files: map[string]*file{},
-		downloader: Downloader{
-			cmd: "yt-dlp",
-			flags: []string{
+		Files: map[string]*File{},
+		Downloader: Downloader{
+			Cmd: "yt-dlp",
+			Flags: []string{
 				"--simulate",
 			},
-			dir: "./tmp/ytdl",
+			Dir: "./tmp/ytdl",
 		},
 	}
 	url := "https://www.youtube.com/watch?v=sCNj0WMBkrs"
@@ -74,13 +74,13 @@ func Test_fileFromPath(t *testing.T) {
 	tests := []struct {
 		name    string
 		args    args
-		want    *file
+		want    *File
 		wantErr bool
 	}{
 		{
 			".webm",
 			args{"The Epic Battle： Jesus vs Cyborg Satan [sCNj0WMBkrs].webm"},
-			&file{
+			&File{
 				id:     "sCNj0WMBkrs",
 				format: "webm",
 				path:   "The Epic Battle： Jesus vs Cyborg Satan [sCNj0WMBkrs].webm",
@@ -90,7 +90,7 @@ func Test_fileFromPath(t *testing.T) {
 		{
 			".webm",
 			args{"song [dQw4w9WgXcQ].mp3"},
-			&file{
+			&File{
 				id:     "dQw4w9WgXcQ",
 				format: "mp3",
 				path:   "song [dQw4w9WgXcQ].mp3",

@@ -5,11 +5,14 @@ import (
 	"log"
 	"net/http"
 	"os"
+
+	"yt/internal/ytdl"
 )
 
 type application struct {
-	errorLog *log.Logger
-	infoLog  *log.Logger
+	errorLog  *log.Logger
+	infoLog   *log.Logger
+	dlmanager *ytdl.Manager
 }
 
 func main() {
@@ -20,8 +23,9 @@ func main() {
 	errorLog := log.New(os.Stderr, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
 
 	app := &application{
-		errorLog: errorLog,
-		infoLog:  infoLog,
+		errorLog:  errorLog,
+		infoLog:   infoLog,
+		dlmanager: ytdl.NewManager(),
 	}
 
 	srv := &http.Server{

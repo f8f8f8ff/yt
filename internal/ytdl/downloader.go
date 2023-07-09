@@ -9,9 +9,9 @@ import (
 
 // --no-simulate needs to be present in flags to enable downloading
 type Downloader struct {
-	cmd   string
-	flags []string
-	dir   string
+	Cmd   string
+	Flags []string
+	Dir   string
 }
 
 func (d *Downloader) download(url string, extraflags ...string) (string, error) {
@@ -19,23 +19,23 @@ func (d *Downloader) download(url string, extraflags ...string) (string, error) 
 		"--quiet",
 		"--print", "filename",
 	}
-	flags := append(d.flags, extraflags...)
+	flags := append(d.Flags, extraflags...)
 	flags = append(flags, defaultflags...)
 	flags = append(flags, url)
-	cmd := exec.Command(d.cmd, flags...)
+	cmd := exec.Command(d.Cmd, flags...)
 	var (
 		stdout strings.Builder
 		stderr strings.Builder
 	)
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
-	if _, err := os.Stat(d.dir); os.IsNotExist(err) {
-		err = os.MkdirAll(d.dir, os.ModePerm)
+	if _, err := os.Stat(d.Dir); os.IsNotExist(err) {
+		err = os.MkdirAll(d.Dir, os.ModePerm)
 		if err != nil {
 			return "", err
 		}
 	}
-	cmd.Dir = d.dir
+	cmd.Dir = d.Dir
 	err := cmd.Run()
 	if err != nil {
 		return "", fmt.Errorf("%s: stderr:\n%v", err, stderr.String())
