@@ -1,0 +1,9 @@
+services:
+  ytdl:
+    image: ytdl:latest
+    volumes:
+      - dl:/dl
+    ports:
+      - "8080:8080"
+volumes:
+  dl:
