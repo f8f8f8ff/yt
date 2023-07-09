@@ -27,6 +27,7 @@ func main() {
 		infoLog:   infoLog,
 		dlmanager: ytdl.NewManager(),
 	}
+	// app.dlmanager.Downloader.Flags = []string{"--no-simulate"}
 
 	srv := &http.Server{
 		Addr:     *addr,

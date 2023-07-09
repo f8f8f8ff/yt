@@ -3,6 +3,7 @@ package main
 import (
 	"html/template"
 	"net/http"
+	"net/url"
 )
 
 func (app *application) home(w http.ResponseWriter, r *http.Request) {
@@ -19,6 +20,7 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		app.serverError(w, err)
 	}
+
 }
 
 func (app *application) video(w http.ResponseWriter, r *http.Request) {
@@ -27,5 +29,11 @@ func (app *application) video(w http.ResponseWriter, r *http.Request) {
 	// 		app.clientError(w, http.StatusMethodNotAllowed)
 	// 		return
 	// 	}
-	w.Write([]byte("video"))
+	requrl := "https://www.youtube.com/watch?v=sCNj0WMBkrs"
+	path, err := app.dlmanager.GetVideo(requrl)
+	if err != nil {
+		app.serverError(w, err)
+	}
+	path = url.PathEscape("/dl/" + path)
+	http.Redirect(w, r, path, http.StatusSeeOther)
 }
