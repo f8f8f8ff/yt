@@ -5,10 +5,8 @@ import "testing"
 func TestDownloader_Video(t *testing.T) {
 	d := &Downloader{
 		Cmd: "yt-dlp",
-		Flags: []string{
-			"--simulate",
-		},
 		Dir: "/tmp/ytdl",
+		Dry: true,
 	}
 	type args struct {
 		url string
@@ -53,10 +51,8 @@ func TestDownloader_Video(t *testing.T) {
 func TestDownloader_Audio(t *testing.T) {
 	d := &Downloader{
 		Cmd: "yt-dlp",
-		Flags: []string{
-			"--simulate",
-		},
 		Dir: "/tmp/ytdl",
+		Dry: true,
 	}
 	type args struct {
 		url string

@@ -10,10 +10,8 @@ func Test_Manager_GetVideo(t *testing.T) {
 		Files: map[string]*File{},
 		Downloader: Downloader{
 			Cmd: "yt-dlp",
-			Flags: []string{
-				"--simulate",
-			},
 			Dir: "./tmp/ytdl",
+			Dry: true,
 		},
 	}
 	url := "https://www.youtube.com/watch?v=sCNj0WMBkrs"
@@ -85,8 +83,9 @@ func Test_fileFromPath(t *testing.T) {
 			".webm",
 			args{"The Epic Battle： Jesus vs Cyborg Satan [sCNj0WMBkrs].webm"},
 			&File{
-				id:     "sCNj0WMBkrs",
+				id:     "sCNj0WMBkrs/v",
 				format: "webm",
+				medium: "video",
 				path:   "The Epic Battle： Jesus vs Cyborg Satan [sCNj0WMBkrs].webm",
 			},
 			false,
@@ -95,8 +94,9 @@ func Test_fileFromPath(t *testing.T) {
 			".webm",
 			args{"song [dQw4w9WgXcQ].mp3"},
 			&File{
-				id:     "dQw4w9WgXcQ",
+				id:     "dQw4w9WgXcQ/a",
 				format: "mp3",
+				medium: "audio",
 				path:   "song [dQw4w9WgXcQ].mp3",
 			},
 			false,
@@ -113,5 +113,29 @@ func Test_fileFromPath(t *testing.T) {
 				t.Errorf("fileFromPath() = %v, want %v", got, tt.want)
 			}
 		})
+	}
+}
+
+func Test_LoadFiles(t *testing.T) {
+	want := make(map[string]*File)
+	want["dQw4w9WgXcQ/v"] = &File{
+		id:     "dQw4w9WgXcQ/v",
+		format: "webm",
+		medium: "video",
+		path:   "fake video [dQw4w9WgXcQ].webm",
+	}
+	want["NRHVzbJVx8I/a"] = &File{
+		id:     "NRHVzbJVx8I/a",
+		format: "mp3",
+		medium: "audio",
+		path:   "unreal song [NRHVzbJVx8I].mp3",
+	}
+	got, err := LoadFiles("testdata")
+	if err != nil {
+		t.Errorf("LoadFiles() error = %v", err)
+		return
+	}
+	if !reflect.DeepEqual(got, want) {
+		t.Errorf("LoadFiles() = %v, want %v", got, want)
 	}
 }

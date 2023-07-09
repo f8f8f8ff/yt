@@ -2,12 +2,15 @@ package dl
 
 import (
 	"errors"
+	"log"
+	"os"
 	"regexp"
 )
 
 type File struct {
 	id     string
 	format string
+	medium string
 	path   string
 }
 
@@ -56,6 +59,7 @@ func (m *Manager) Get(url, medium string) (string, error) {
 }
 
 func (m *Manager) DownloadVideo(url, medium string) (*File, error) {
+	log.Println("DOWNLOADING:", url, medium)
 	var (
 		path string
 		err  error
@@ -75,12 +79,7 @@ func (m *Manager) DownloadVideo(url, medium string) (*File, error) {
 	if err != nil {
 		return nil, err
 	}
-	switch medium {
-	case "video":
-		m.Files[f.id+"/v"] = f
-	case "audio":
-		m.Files[f.id+"/a"] = f
-	}
+	m.Files[f.id] = f
 	return f, nil
 }
 
@@ -105,14 +104,55 @@ func idFromUrl(url string) (string, error) {
 
 var BadPath = errors.New("couldn't get youtube id from path")
 
+// should return a file struct with "youtubeid/a" or /v for audio or video
 func fileFromPath(path string) (*File, error) {
 	match := idPathRegexp.FindStringSubmatch(path)
 	if len(match) < 2 {
 		return nil, BadPath
 	}
+	id := match[1]
+	format := match[2]
+	var medium string
+	switch format {
+	case "webm":
+		id += "/v"
+		medium = "video"
+	case "mp3":
+		id += "/a"
+		medium = "audio"
+	default:
+		return nil, BadMedium
+	}
 	return &File{
-		id:     match[1],
+		id:     id,
 		path:   path,
-		format: match[2],
+		format: format,
+		medium: medium,
 	}, nil
+}
+
+func LoadFiles(dir string) (map[string]*File, error) {
+	files, err := os.ReadDir(dir)
+	if err != nil {
+		return nil, err
+	}
+	m := make(map[string]*File)
+	for _, file := range files {
+		if file.IsDir() {
+			continue
+		}
+		f, err := fileFromPath(file.Name())
+		if err == nil {
+			m[f.id] = f
+		}
+	}
+	return m, nil
+}
+
+func (m *Manager) Dir() string {
+	return m.Downloader.Dir
+}
+
+func (m *Manager) SetDir(dir string) {
+	m.Downloader.Dir = dir
 }

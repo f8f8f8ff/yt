@@ -18,6 +18,7 @@ type application struct {
 func main() {
 	addr := flag.String("addr", ":4000", "http network address")
 	dry := flag.Bool("dry", false, "disables downloading content")
+	dir := flag.String("dir", "./tmp/", "directory to download content")
 	flag.Parse()
 
 	infoLog := log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
@@ -28,6 +29,12 @@ func main() {
 		infoLog:   infoLog,
 		dlmanager: dl.NewManager(),
 	}
+	app.dlmanager.SetDir(*dir)
+	files, err := dl.LoadFiles(*dir)
+	if err != nil {
+		app.errorLog.Fatal(err)
+	}
+	app.dlmanager.Files = files
 	if *dry {
 		app.dlmanager.Downloader.Dry = true
 	}
@@ -39,6 +46,6 @@ func main() {
 	}
 
 	infoLog.Printf("starting on %s", *addr)
-	err := srv.ListenAndServe()
+	err = srv.ListenAndServe()
 	errorLog.Fatal(err)
 }
