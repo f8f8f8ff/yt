@@ -57,7 +57,7 @@ func Test_getId(t *testing.T) {
 	}
 	for _, url := range urls {
 		t.Run(url, func(t *testing.T) {
-			got, err := idFromUrl(url)
+			got, err := IdFromUrl(url)
 			t.Logf("%v = %v", url, got)
 			if err != nil {
 				t.Errorf("getId() error = %v", err)

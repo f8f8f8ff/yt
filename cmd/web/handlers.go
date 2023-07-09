@@ -3,12 +3,17 @@ package main
 import (
 	"html/template"
 	"net/http"
-	url_ "net/url"
+	_path "path"
 )
 
 func (app *application) home(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path != "/" {
-		app.download(w, r, r.URL.RequestURI(), "audio")
+		url, err := halfUrlToYoutube(r.URL.RequestURI())
+		if err != nil {
+			app.notFound(w)
+			return
+		}
+		app.download(w, r, url, "audio", false)
 		return
 	}
 	files := []string{
@@ -43,21 +48,27 @@ func (app *application) getPost(w http.ResponseWriter, r *http.Request) {
 	}
 	url := r.PostForm.Get("url")
 	medium := r.PostForm.Get("medium")
-	app.download(w, r, url, medium)
+	app.download(w, r, url, medium, true)
 }
 
-func (app *application) download(w http.ResponseWriter, r *http.Request, url, medium string) {
+func (app *application) download(w http.ResponseWriter, r *http.Request, url, medium string, redirect bool) {
 	app.infoLog.Printf("url: %v, medium: %v", url, medium)
 	var (
-		path string
-		err  error
+		p   string
+		err error
 	)
-	path, err = app.dlmanager.Get(url, medium)
+	p, err = app.dlmanager.Get(url, medium)
 	if err != nil {
-		app.serverError(w, err)
+		// app.serverError(w, err)
 		app.clientErrorV(w, http.StatusBadRequest, err)
 		return
 	}
-	path = url_.PathEscape("/dl/" + path)
-	http.Redirect(w, r, path, http.StatusSeeOther)
+	w.Header().Set("Content-Disposition", "attachment; filename="+p)
+	if redirect {
+		w.Header().Set("Location", "/")
+	}
+	fp := _path.Join(app.dlmanager.Dir(), p)
+	http.ServeFile(w, r, fp)
+	// path = url_.PathEscape("/dl/" + path)
+	// http.Redirect(w, r, p, http.StatusSeeOther)
 }

@@ -35,7 +35,7 @@ var BadMedium = errors.New("unknown medium")
 // returns the path to a downloaded youtube video by its url
 // downloads the video if not existent
 func (m *Manager) Get(url, medium string) (string, error) {
-	id, err := idFromUrl(url)
+	id, err := IdFromUrl(url)
 	if err != nil {
 		return "", err
 	}
@@ -94,7 +94,7 @@ func init() {
 
 var BadUrl = errors.New("couldn't get youtube id from url")
 
-func idFromUrl(url string) (string, error) {
+func IdFromUrl(url string) (string, error) {
 	match := idUrlRegexp.FindStringSubmatch(url)
 	if len(match) < 2 {
 		return "", BadUrl
