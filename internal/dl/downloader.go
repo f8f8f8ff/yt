@@ -1,4 +1,4 @@
-package ytdl
+package dl
 
 import (
 	"fmt"
@@ -12,6 +12,7 @@ type Downloader struct {
 	Cmd   string
 	Flags []string
 	Dir   string
+	Dry   bool
 }
 
 func (d *Downloader) download(url string, extraflags ...string) (string, error) {
@@ -20,6 +21,9 @@ func (d *Downloader) download(url string, extraflags ...string) (string, error) 
 		"--print", "filename",
 	}
 	flags := append(d.Flags, extraflags...)
+	if !d.Dry {
+		flags = append(flags, "--no-simulate")
+	}
 	flags = append(flags, defaultflags...)
 	flags = append(flags, url)
 	cmd := exec.Command(d.Cmd, flags...)

@@ -9,7 +9,7 @@ func (app *application) routes() *http.ServeMux {
 	mux.Handle("/dl/", app.logRequest(http.StripPrefix("/dl", fs)))
 
 	mux.Handle("/", app.logRequest(http.HandlerFunc(app.home)))
-	mux.Handle("/video", app.logRequest(http.HandlerFunc(app.video)))
+	mux.Handle("/get", app.logRequest(http.HandlerFunc(app.get)))
 
 	return mux
 }

@@ -1,0 +1,16 @@
+{{define "main"}}
+<form action='/get' method='POST'>
+	<div>
+		<input type='text' name='url'></input><br>
+	</div>
+	<div>
+		<input type='radio' id='audio' name='medium' value='audio' checked>
+		<label for='audio'>audio</label>
+		<input type='radio' id='video' name='medium' value='video'>
+		<label for='video'>video</label>
+	</div>
+	<div>
+		<input type='submit' value='download'>
+	</div>
+</form>
+{{end}}

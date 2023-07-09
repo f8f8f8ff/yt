@@ -1,4 +1,4 @@
-package ytdl
+package dl
 
 import (
 	"errors"
@@ -27,17 +27,26 @@ func NewManager() *Manager {
 	}
 }
 
+var BadMedium = errors.New("unknown medium")
+
 // returns the path to a downloaded youtube video by its url
 // downloads the video if not existent
-func (m *Manager) GetVideo(url string) (string, error) {
+func (m *Manager) Get(url, medium string) (string, error) {
 	id, err := idFromUrl(url)
 	if err != nil {
 		return "", err
 	}
-	file := m.Files[id+"/v"]
+	switch medium {
+	case "video":
+		id += "/v"
+	case "audio":
+		id += "/a"
+	default:
+		return "", BadMedium
+	}
+	file := m.Files[id]
 	if file == nil {
-		// download video
-		file, err = m.DownloadVideo(url)
+		file, err = m.DownloadVideo(url, medium)
 		if err != nil {
 			return "", err
 		}
@@ -46,8 +55,19 @@ func (m *Manager) GetVideo(url string) (string, error) {
 	return file.path, nil
 }
 
-func (m *Manager) DownloadVideo(url string) (*File, error) {
-	path, err := m.Downloader.Video(url)
+func (m *Manager) DownloadVideo(url, medium string) (*File, error) {
+	var (
+		path string
+		err  error
+	)
+	switch medium {
+	case "video":
+		path, err = m.Downloader.Video(url)
+	case "audio":
+		path, err = m.Downloader.Audio(url)
+	default:
+		return nil, BadMedium
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -55,7 +75,12 @@ func (m *Manager) DownloadVideo(url string) (*File, error) {
 	if err != nil {
 		return nil, err
 	}
-	m.Files[f.id+"/v"] = f
+	switch medium {
+	case "video":
+		m.Files[f.id+"/v"] = f
+	case "audio":
+		m.Files[f.id+"/a"] = f
+	}
 	return f, nil
 }
 
@@ -68,18 +93,22 @@ func init() {
 	idPathRegexp = regexp.MustCompile(`\[([^#\&\?]*)\]\.(.*$)`)
 }
 
+var BadUrl = errors.New("couldn't get youtube id from url")
+
 func idFromUrl(url string) (string, error) {
 	match := idUrlRegexp.FindStringSubmatch(url)
 	if len(match) < 2 {
-		return "", errors.New("couldn't get id from url")
+		return "", BadUrl
 	}
 	return match[1], nil
 }
 
+var BadPath = errors.New("couldn't get youtube id from path")
+
 func fileFromPath(path string) (*File, error) {
 	match := idPathRegexp.FindStringSubmatch(path)
 	if len(match) < 2 {
-		return nil, errors.New("couldn't get id from path")
+		return nil, BadPath
 	}
 	return &File{
 		id:     match[1],

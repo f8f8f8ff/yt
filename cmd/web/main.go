@@ -6,17 +6,18 @@ import (
 	"net/http"
 	"os"
 
-	"yt/internal/ytdl"
+	"yt/internal/dl"
 )
 
 type application struct {
 	errorLog  *log.Logger
 	infoLog   *log.Logger
-	dlmanager *ytdl.Manager
+	dlmanager *dl.Manager
 }
 
 func main() {
 	addr := flag.String("addr", ":4000", "http network address")
+	dry := flag.Bool("dry", false, "disables downloading content")
 	flag.Parse()
 
 	infoLog := log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
@@ -25,9 +26,11 @@ func main() {
 	app := &application{
 		errorLog:  errorLog,
 		infoLog:   infoLog,
-		dlmanager: ytdl.NewManager(),
+		dlmanager: dl.NewManager(),
 	}
-	// app.dlmanager.Downloader.Flags = []string{"--no-simulate"}
+	if *dry {
+		app.dlmanager.Downloader.Dry = true
+	}
 
 	srv := &http.Server{
 		Addr:     *addr,

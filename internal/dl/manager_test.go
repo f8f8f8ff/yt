@@ -1,4 +1,4 @@
-package ytdl
+package dl
 
 import (
 	"reflect"
@@ -18,7 +18,7 @@ func Test_Manager_GetVideo(t *testing.T) {
 	}
 	url := "https://www.youtube.com/watch?v=sCNj0WMBkrs"
 	want := "The Epic Battle： Jesus vs Cyborg Satan [sCNj0WMBkrs].webm"
-	got, err := m.GetVideo(url)
+	got, err := m.Get(url, "video")
 	if err != nil {
 		t.Errorf("Manager.GetVideo() error = %v", err)
 	}
@@ -53,10 +53,14 @@ func Test_getId(t *testing.T) {
 		"http://youtube.com/watch?v=dQw4w9WgXcQ&feature=youtube_gdata_player",
 		"http://youtube.com/watch?vi=dQw4w9WgXcQ&feature=youtube_gdata_player",
 		"http://youtu.be/dQw4w9WgXcQ?feature=youtube_gdata_player",
+		"/user/Scobleizer#p/u/1/1p3vcRhsYGo",
+		"/watch?v=cKZDdG9FTKY&feature=channel",
+		"/watch?v=yZ-K7nCVnBI&playnext_from=TL&videos=osPknwzXEas&feature=sub",
 	}
 	for _, url := range urls {
 		t.Run(url, func(t *testing.T) {
 			got, err := idFromUrl(url)
+			t.Logf("%v = %v", url, got)
 			if err != nil {
 				t.Errorf("getId() error = %v", err)
 			}
