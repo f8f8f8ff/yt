@@ -19,6 +19,7 @@ func (d *Downloader) download(url string, extraflags ...string) (string, error) 
 	defaultflags := []string{
 		"--quiet",
 		"--print", "filename",
+		"--no-mtime",
 	}
 	flags := append(d.Flags, extraflags...)
 	if !d.Dry {
