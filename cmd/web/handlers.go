@@ -61,8 +61,7 @@ func (app *application) download(w http.ResponseWriter, r *http.Request, url, me
 	)
 	p, err = app.dlmanager.Get(url, medium)
 	if err != nil {
-		// app.serverError(w, err)
-		app.clientErrorV(w, http.StatusBadRequest, err)
+		app.serverError(w, err)
 		return
 	}
 	w.Header().Set("Content-Disposition", "attachment; filename="+p)
