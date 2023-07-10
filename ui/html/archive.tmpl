@@ -1,0 +1,6 @@
+{{define "main"}}
+	<p><a href="/">home</a></p>
+	{{range .Files}}
+		<a href="{{.Name}}">{{.Name}}</a> ({{.Size}})<br>
+	{{end}}
+{{end}}

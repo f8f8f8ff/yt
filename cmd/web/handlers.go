@@ -4,6 +4,8 @@ import (
 	"html/template"
 	"net/http"
 	_path "path"
+
+	"yt/internal/dirlist"
 )
 
 func (app *application) home(w http.ResponseWriter, r *http.Request) {
@@ -71,4 +73,34 @@ func (app *application) download(w http.ResponseWriter, r *http.Request, url, me
 	http.ServeFile(w, r, fp)
 	// path = url_.PathEscape("/dl/" + path)
 	// http.Redirect(w, r, p, http.StatusSeeOther)
+}
+
+func (app *application) dl(w http.ResponseWriter, r *http.Request) {
+	if r.URL.Path != "/dl/" {
+		fs := http.StripPrefix("/dl", http.FileServer(http.Dir(app.dlmanager.Downloader.Dir)))
+		fs.ServeHTTP(w, r)
+		return
+	}
+	templatefiles := []string{
+		"./ui/html/home.tmpl",
+		"./ui/html/archive.tmpl",
+	}
+	ts, err := template.ParseFiles(templatefiles...)
+	if err != nil {
+		app.serverError(w, err)
+		return
+	}
+	files, err := dirlist.Dir(app.dlmanager.Dir())
+	if err != nil {
+		app.serverError(w, err)
+		return
+	}
+	data := struct{ Files []dirlist.File }{
+		Files: files,
+	}
+	err = ts.ExecuteTemplate(w, "base", data)
+	if err != nil {
+		app.serverError(w, err)
+		return
+	}
 }
