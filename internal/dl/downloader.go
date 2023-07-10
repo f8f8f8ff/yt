@@ -55,8 +55,8 @@ func (d *Downloader) Video(url string) (string, error) {
 func (d *Downloader) Audio(url string) (string, error) {
 	flags := []string{
 		"-x",
-		"--audio-format",
-		"mp3",
+		"--audio-format", "mp3",
+		"--audio-quality", "0",
 	}
 	path, err := d.download(url, flags...)
 	if err != nil {

@@ -114,7 +114,7 @@ func fileFromPath(path string) (*File, error) {
 	format := match[2]
 	var medium string
 	switch format {
-	case "webm":
+	case "webm", "mp4", "mov", "flv":
 		id += "/v"
 		medium = "video"
 	case "mp3":
