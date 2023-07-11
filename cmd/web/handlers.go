@@ -6,11 +6,12 @@ import (
 	_path "path"
 
 	"yt/internal/dirlist"
+	"yt/internal/dl"
 )
 
 func (app *application) home(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path != "/" {
-		url, err := halfUrlToYoutube(r.URL.RequestURI())
+		url, err := dl.PartialUrlToYoutube(r.URL.RequestURI())
 		if err != nil {
 			app.notFound(w)
 			return

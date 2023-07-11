@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"net/http"
 	"runtime/debug"
-	"yt/internal/dl"
 )
 
 func (app *application) serverError(w http.ResponseWriter, err error) {
@@ -24,13 +23,4 @@ func (app *application) clientErrorV(w http.ResponseWriter, status int, err erro
 
 func (app *application) notFound(w http.ResponseWriter) {
 	app.clientError(w, http.StatusNotFound)
-}
-
-func halfUrlToYoutube(uri string) (string, error) {
-	id, err := dl.IdFromUrl(uri)
-	if err != nil {
-		return "", err
-	}
-	url := fmt.Sprintf("https://youtube.com/watch?v=%v", id)
-	return url, nil
 }
