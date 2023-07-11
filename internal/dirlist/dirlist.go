@@ -5,12 +5,16 @@ import (
 	"os"
 	"sort"
 	"time"
+
+	"yt/internal/dl"
 )
 
 type File struct {
-	Name  string
-	bytes int64
-	time  time.Time
+	Name   string
+	bytes  int64
+	time   time.Time
+	YtLink string
+	Yt     bool
 }
 
 func (f *File) Size() string {
@@ -41,14 +45,16 @@ func Dir(path string) ([]File, error) {
 		if err != nil {
 			return nil, err
 		}
-		name := file.Name()
-		size := info.Size()
-		date := info.ModTime()
-		files = append(files, File{
-			Name:  name,
-			bytes: size,
-			time:  date,
-		})
+		f := File{}
+		f.Name = file.Name()
+		f.bytes = info.Size()
+		f.time = info.ModTime()
+		id, _, err := dl.IdFromName(f.Name)
+		if err == nil {
+			f.YtLink = dl.UrlFromId(id)
+			f.Yt = true
+		}
+		files = append(files, f)
 	}
 	sort.Slice(files, func(i, j int) bool {
 		return files[i].time.After(files[j].time)

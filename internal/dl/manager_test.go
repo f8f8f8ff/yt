@@ -190,7 +190,7 @@ func Test_idFromName(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			gotId, gotFormat, err := idFromName(tt.args.name)
+			gotId, gotFormat, err := IdFromName(tt.args.name)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("idFromName() error = %v, wantErr %v", err, tt.wantErr)
 				return

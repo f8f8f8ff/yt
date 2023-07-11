@@ -72,7 +72,7 @@ func (d *Downloader) Audio(url string) ([]string, error) {
 	}
 	paths := splitMultipleFiles(p)
 	for i, f := range paths {
-		_, format, err := idFromName(p)
+		_, format, err := IdFromName(p)
 		if err != nil {
 			return nil, err
 		}

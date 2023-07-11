@@ -4,7 +4,6 @@ import (
 	"errors"
 	"log"
 	"os"
-	"regexp"
 )
 
 type File struct {
@@ -29,8 +28,6 @@ var DefaultManager Manager = Manager{
 	Files:  map[string]*File{},
 	Logger: nil,
 }
-
-var BadMedium = errors.New("unknown medium")
 
 // returns the path to a downloaded youtube video by its url
 // downloads the video if not existent
@@ -103,40 +100,9 @@ func (m *Manager) addFile(f *File) {
 	m.Files[f.id] = f
 }
 
-var idUrlRegexp *regexp.Regexp
-var idPathRegexp *regexp.Regexp
-
-func init() {
-	// https://stackoverflow.com/questions/3452546/how-do-i-get-the-youtube-video-id-from-a-url
-	idUrlRegexp = regexp.MustCompile(`^.*(?:(?:youtu\.be\/|v\/|vi\/|u\/\w\/|embed\/|shorts\/)|(?:(?:watch)?\?v(?:i)?=|\&v(?:i)?=))([^#\&\?]*).*`)
-	idPathRegexp = regexp.MustCompile(`.+\[([^#\&\?]{11})\]\.(.*$)`)
-}
-
-var BadUrl = errors.New("couldn't get youtube id from url")
-
-func IdFromUrl(url string) (string, error) {
-	match := idUrlRegexp.FindStringSubmatch(url)
-	if len(match) < 2 {
-		return "", BadUrl
-	}
-	return match[1], nil
-}
-
-func idFromName(name string) (id, format string, err error) {
-	match := idPathRegexp.FindStringSubmatch(name)
-	if len(match) < 2 {
-		return "", "", BadPath
-	}
-	id = match[1]
-	format = match[2]
-	return id, format, nil
-}
-
-var BadPath = errors.New("couldn't get youtube id from path")
-
 // should return a file struct with "youtubeid/a" or /v for audio or video
 func fileFromPath(path string) (*File, error) {
-	id, format, err := idFromName(path)
+	id, format, err := IdFromName(path)
 	if err != nil {
 		return nil, err
 	}
