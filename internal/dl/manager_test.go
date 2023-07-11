@@ -15,12 +15,12 @@ func Test_Manager_GetVideo(t *testing.T) {
 		},
 	}
 	url := "https://www.youtube.com/watch?v=sCNj0WMBkrs"
-	want := "The Epic Battle： Jesus vs Cyborg Satan [sCNj0WMBkrs].webm"
+	want := []string{"The Epic Battle： Jesus vs Cyborg Satan [sCNj0WMBkrs].webm"}
 	got, err := m.Get(url, "video")
 	if err != nil {
 		t.Errorf("Manager.GetVideo() error = %v", err)
 	}
-	if got != want {
+	if reflect.DeepEqual(got, want) {
 		t.Fatalf("Manager.GetVideo() = %v, want %v", got, want)
 	}
 }

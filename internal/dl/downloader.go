@@ -49,23 +49,34 @@ func (d *Downloader) download(url string, extraflags ...string) (string, error) 
 	return path, err
 }
 
-func (d *Downloader) Video(url string) (string, error) {
-	return d.download(url)
+func (d *Downloader) Video(url string) ([]string, error) {
+	p, err := d.download(url)
+	if err != nil {
+		return nil, err
+	}
+	return splitMultipleFiles(p), nil
 }
 
-func (d *Downloader) Audio(url string) (string, error) {
+func (d *Downloader) Audio(url string) ([]string, error) {
 	flags := []string{
 		"-x",
 		"--audio-format", "mp3",
 		"--audio-quality", "0",
 	}
-	path, err := d.download(url, flags...)
+	p, err := d.download(url, flags...)
 	if err != nil {
-		return path, err
+		return nil, err
 	}
-	m := idPathRegexp.FindStringSubmatch(path)
-	// trim original format suffix
-	path = strings.TrimSuffix(path, m[2])
-	path = path + "mp3"
-	return path, nil
+	paths := splitMultipleFiles(p)
+	for i, f := range paths {
+		m := idPathRegexp.FindStringSubmatch(p)
+		// trim original format suffix
+		f = strings.TrimSuffix(f, m[2])
+		paths[i] = f + "mp3"
+	}
+	return paths, nil
+}
+
+func splitMultipleFiles(files string) []string {
+	return strings.Split(strings.TrimSuffix(files, "\n"), "\n")
 }

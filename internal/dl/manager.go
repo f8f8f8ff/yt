@@ -34,10 +34,15 @@ var BadMedium = errors.New("unknown medium")
 
 // returns the path to a downloaded youtube video by its url
 // downloads the video if not existent
-func (m *Manager) Get(url, medium string) (string, error) {
+// TODO only returns the path of the first video downloaded
+func (m *Manager) Get(url, medium string) ([]string, error) {
 	id, err := IdFromUrl(url)
+	// if we cant get the id from the url, go ahead and continue
+	if errors.Is(err, BadUrl) {
+		err = nil
+	}
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 	switch medium {
 	case "video":
@@ -45,42 +50,52 @@ func (m *Manager) Get(url, medium string) (string, error) {
 	case "audio":
 		id += "/a"
 	default:
-		return "", BadMedium
+		return nil, BadMedium
 	}
 	file := m.Files[id]
-	if file == nil {
-		file, err = m.DownloadVideo(url, medium)
-		if err != nil {
-			return "", err
-		}
-		return file.path, nil
+	paths := []string{}
+	if file != nil {
+		paths = append(paths, file.path)
+		return paths, nil
 	}
-	return file.path, nil
+	// don't have video in the archive, download it
+	files, err := m.DownloadVideo(url, medium)
+	if err != nil {
+		return nil, err
+	}
+	for _, f := range files {
+		paths = append(paths, f.path)
+	}
+	return paths, nil
 }
 
-func (m *Manager) DownloadVideo(url, medium string) (*File, error) {
+func (m *Manager) DownloadVideo(url, medium string) ([]*File, error) {
 	log.Println("DOWNLOADING:", url, medium)
 	var (
-		path string
-		err  error
+		paths []string
+		err   error
 	)
 	switch medium {
 	case "video":
-		path, err = m.Downloader.Video(url)
+		paths, err = m.Downloader.Video(url)
 	case "audio":
-		path, err = m.Downloader.Audio(url)
+		paths, err = m.Downloader.Audio(url)
 	default:
 		return nil, BadMedium
 	}
 	if err != nil {
 		return nil, err
 	}
-	f, err := fileFromPath(path)
-	if err != nil {
-		return nil, err
+	files := []*File{}
+	for _, p := range paths {
+		f, err := fileFromPath(p)
+		if err != nil {
+			return nil, err
+		}
+		m.Files[f.id] = f
+		files = append(files, f)
 	}
-	m.Files[f.id] = f
-	return f, nil
+	return files, nil
 }
 
 var idUrlRegexp *regexp.Regexp

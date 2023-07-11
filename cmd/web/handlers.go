@@ -56,22 +56,25 @@ func (app *application) getPost(w http.ResponseWriter, r *http.Request) {
 func (app *application) download(w http.ResponseWriter, r *http.Request, url, medium string, redirect bool) {
 	app.infoLog.Printf("url: %v, medium: %v", url, medium)
 	var (
-		p   string
-		err error
+		paths []string
+		err   error
 	)
-	p, err = app.dlmanager.Get(url, medium)
+	paths, err = app.dlmanager.Get(url, medium)
 	if err != nil {
 		app.serverError(w, err)
 		return
 	}
-	w.Header().Set("Content-Disposition", "attachment; filename="+p)
+	if len(paths) > 1 {
+		http.Redirect(w, r, "/dl", http.StatusSeeOther)
+		return
+	}
+	path := paths[0]
+	w.Header().Set("Content-Disposition", "attachment; filename="+path)
 	if redirect {
 		w.Header().Set("Location", "/")
 	}
-	fp := _path.Join(app.dlmanager.Dir(), p)
+	fp := _path.Join(app.dlmanager.Dir(), path)
 	http.ServeFile(w, r, fp)
-	// path = url_.PathEscape("/dl/" + path)
-	// http.Redirect(w, r, p, http.StatusSeeOther)
 }
 
 func (app *application) dl(w http.ResponseWriter, r *http.Request) {
