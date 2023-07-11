@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-func Test_Manager_GetVideo(t *testing.T) {
+func TestManager_Get(t *testing.T) {
 	m := Manager{
 		Files: map[string]*File{},
 		Downloader: Downloader{
@@ -14,18 +14,40 @@ func Test_Manager_GetVideo(t *testing.T) {
 			Dry: true,
 		},
 	}
-	url := "https://www.youtube.com/watch?v=sCNj0WMBkrs"
-	want := []string{"The Epic Battle： Jesus vs Cyborg Satan [sCNj0WMBkrs].webm"}
-	got, err := m.Get(url, "video")
-	if err != nil {
-		t.Errorf("Manager.GetVideo() error = %v", err)
+	type args struct {
+		url    string
+		medium string
 	}
-	if reflect.DeepEqual(got, want) {
-		t.Fatalf("Manager.GetVideo() = %v, want %v", got, want)
+	tests := []struct {
+		name    string
+		m       *Manager
+		args    args
+		want    []string
+		wantErr bool
+	}{
+		{
+			"single video",
+			&m,
+			args{"https://www.youtube.com/watch?v=sCNj0WMBkrs", "video"},
+			[]string{"The Epic Battle： Jesus vs Cyborg Satan [sCNj0WMBkrs].webm"},
+			false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := tt.m.Get(tt.args.url, tt.args.medium)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Manager.Get() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("Manager.Get() = %v, want %v", got, tt.want)
+			}
+		})
 	}
 }
 
-func Test_getId(t *testing.T) {
+func Test_IdFromUrl(t *testing.T) {
 	urls := []string{
 		"https://youtube.com/shorts/dQw4w9WgXcQ?feature=share",
 		"//www.youtube-nocookie.com/embed/up_lNV-yoK4?rel=0",
@@ -60,10 +82,10 @@ func Test_getId(t *testing.T) {
 			got, err := IdFromUrl(url)
 			t.Logf("%v = %v", url, got)
 			if err != nil {
-				t.Errorf("getId() error = %v", err)
+				t.Errorf("IdFromUrl() error = %v", err)
 			}
 			if len(got) != 11 {
-				t.Errorf("getId() = %v", got)
+				t.Errorf("IdFromUrl() = %v", got)
 			}
 		})
 	}
@@ -137,5 +159,48 @@ func Test_LoadFiles(t *testing.T) {
 	}
 	if !reflect.DeepEqual(got, want) {
 		t.Errorf("LoadFiles() = %v, want %v", got, want)
+	}
+}
+
+func Test_idFromName(t *testing.T) {
+	type args struct {
+		name string
+	}
+	tests := []struct {
+		name       string
+		args       args
+		wantId     string
+		wantFormat string
+		wantErr    bool
+	}{
+		{
+			"normal",
+			args{"The Epic Battle： Jesus vs Cyborg Satan [sCNj0WMBkrs].webm"},
+			"sCNj0WMBkrs",
+			"webm",
+			false,
+		},
+		{
+			"has [] in title",
+			args{"Henry's Dress [07] Feathers [M3lOCJ--ikw].mp3"},
+			"M3lOCJ--ikw",
+			"mp3",
+			false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			gotId, gotFormat, err := idFromName(tt.args.name)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("idFromName() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if gotId != tt.wantId {
+				t.Errorf("idFromName() gotId = %v, want %v", gotId, tt.wantId)
+			}
+			if gotFormat != tt.wantFormat {
+				t.Errorf("idFromName() gotFormat = %v, want %v", gotFormat, tt.wantFormat)
+			}
+		})
 	}
 }

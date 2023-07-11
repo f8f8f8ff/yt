@@ -2,6 +2,7 @@ package dl
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"os/exec"
 	"strings"
@@ -9,13 +10,15 @@ import (
 
 // --no-simulate needs to be present in flags to enable downloading
 type Downloader struct {
-	Cmd   string
-	Flags []string
-	Dir   string
-	Dry   bool
+	Cmd    string
+	Flags  []string
+	Dir    string
+	Dry    bool
+	Logger *log.Logger
 }
 
 func (d *Downloader) download(url string, extraflags ...string) (string, error) {
+	d.log("downloading %v with flags %v", url, extraflags)
 	defaultflags := []string{
 		"--quiet",
 		"--print", "filename",
@@ -69,12 +72,23 @@ func (d *Downloader) Audio(url string) ([]string, error) {
 	}
 	paths := splitMultipleFiles(p)
 	for i, f := range paths {
-		m := idPathRegexp.FindStringSubmatch(p)
+		_, format, err := idFromName(p)
+		if err != nil {
+			return nil, err
+		}
 		// trim original format suffix
-		f = strings.TrimSuffix(f, m[2])
+		f = strings.TrimSuffix(f, format)
 		paths[i] = f + "mp3"
 	}
 	return paths, nil
+}
+
+func (d *Downloader) log(format string, a ...any) {
+	if d.Logger == nil {
+		return
+	}
+	format = "dl.Downloader: " + format
+	d.Logger.Printf(format, a...)
 }
 
 func splitMultipleFiles(files string) []string {

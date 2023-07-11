@@ -17,17 +17,17 @@ type File struct {
 type Manager struct {
 	Downloader Downloader
 	Files      map[string]*File
+	Logger     *log.Logger
 }
 
-func NewManager() *Manager {
-	return &Manager{
-		Downloader: Downloader{
-			Cmd:   "yt-dlp",
-			Flags: []string{},
-			Dir:   "./tmp/",
-		},
-		Files: map[string]*File{},
-	}
+var DefaultManager Manager = Manager{
+	Downloader: Downloader{
+		Cmd:   "yt-dlp",
+		Flags: []string{},
+		Dir:   "./tmp/",
+	},
+	Files:  map[string]*File{},
+	Logger: nil,
 }
 
 var BadMedium = errors.New("unknown medium")
@@ -36,8 +36,8 @@ var BadMedium = errors.New("unknown medium")
 // downloads the video if not existent
 // TODO only returns the path of the first video downloaded
 func (m *Manager) Get(url, medium string) ([]string, error) {
+	m.log("requesting: %v as %v", url, medium)
 	id, err := IdFromUrl(url)
-	// if we cant get the id from the url, go ahead and continue
 	if errors.Is(err, BadUrl) {
 		err = nil
 	}
@@ -70,7 +70,7 @@ func (m *Manager) Get(url, medium string) ([]string, error) {
 }
 
 func (m *Manager) DownloadVideo(url, medium string) ([]*File, error) {
-	log.Println("DOWNLOADING:", url, medium)
+	m.log("downloading %v as %v", url, medium)
 	var (
 		paths []string
 		err   error
@@ -92,10 +92,15 @@ func (m *Manager) DownloadVideo(url, medium string) ([]*File, error) {
 		if err != nil {
 			return nil, err
 		}
-		m.Files[f.id] = f
+		m.addFile(f)
 		files = append(files, f)
 	}
 	return files, nil
+}
+
+func (m *Manager) addFile(f *File) {
+	m.log("adding file %v", f)
+	m.Files[f.id] = f
 }
 
 var idUrlRegexp *regexp.Regexp
@@ -104,7 +109,7 @@ var idPathRegexp *regexp.Regexp
 func init() {
 	// https://stackoverflow.com/questions/3452546/how-do-i-get-the-youtube-video-id-from-a-url
 	idUrlRegexp = regexp.MustCompile(`^.*(?:(?:youtu\.be\/|v\/|vi\/|u\/\w\/|embed\/|shorts\/)|(?:(?:watch)?\?v(?:i)?=|\&v(?:i)?=))([^#\&\?]*).*`)
-	idPathRegexp = regexp.MustCompile(`\[([^#\&\?]*)\]\.(.*$)`)
+	idPathRegexp = regexp.MustCompile(`.+\[([^#\&\?]{11})\]\.(.*$)`)
 }
 
 var BadUrl = errors.New("couldn't get youtube id from url")
@@ -117,16 +122,24 @@ func IdFromUrl(url string) (string, error) {
 	return match[1], nil
 }
 
+func idFromName(name string) (id, format string, err error) {
+	match := idPathRegexp.FindStringSubmatch(name)
+	if len(match) < 2 {
+		return "", "", BadPath
+	}
+	id = match[1]
+	format = match[2]
+	return id, format, nil
+}
+
 var BadPath = errors.New("couldn't get youtube id from path")
 
 // should return a file struct with "youtubeid/a" or /v for audio or video
 func fileFromPath(path string) (*File, error) {
-	match := idPathRegexp.FindStringSubmatch(path)
-	if len(match) < 2 {
-		return nil, BadPath
+	id, format, err := idFromName(path)
+	if err != nil {
+		return nil, err
 	}
-	id := match[1]
-	format := match[2]
 	var medium string
 	switch format {
 	case "webm", "mp4", "mov", "flv":
@@ -168,6 +181,10 @@ func (m *Manager) Dir() string {
 	return m.Downloader.Dir
 }
 
-func (m *Manager) SetDir(dir string) {
-	m.Downloader.Dir = dir
+func (m *Manager) log(format string, a ...any) {
+	if m.Logger == nil {
+		return
+	}
+	format = "dl.Manager: " + format
+	m.Logger.Printf(format, a...)
 }

@@ -24,19 +24,23 @@ func main() {
 	infoLog := log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
 	errorLog := log.New(os.Stderr, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
 
+	m := dl.DefaultManager
+	m.Logger = infoLog
+	m.Downloader.Dir = *dir
+	m.Downloader.Logger = infoLog
+	files, err := dl.LoadFiles(*dir)
+	if err != nil {
+		errorLog.Fatal(err)
+	}
+	m.Files = files
+	if *dry {
+		m.Downloader.Dry = true
+	}
+
 	app := &application{
 		errorLog:  errorLog,
 		infoLog:   infoLog,
-		dlmanager: dl.NewManager(),
-	}
-	app.dlmanager.SetDir(*dir)
-	files, err := dl.LoadFiles(*dir)
-	if err != nil {
-		app.errorLog.Fatal(err)
-	}
-	app.dlmanager.Files = files
-	if *dry {
-		app.dlmanager.Downloader.Dry = true
+		dlmanager: &m,
 	}
 
 	srv := &http.Server{
