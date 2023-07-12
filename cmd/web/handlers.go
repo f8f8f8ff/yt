@@ -67,6 +67,7 @@ func (app *application) download(w http.ResponseWriter, r *http.Request, url str
 		return
 	}
 	if len(paths) > 1 {
+		// TODO zip paths together?
 		http.Redirect(w, r, "/dl", http.StatusSeeOther)
 		return
 	}
