@@ -23,6 +23,7 @@ func (d *Downloader) download(url string, extraflags ...string) (string, error) 
 		"--quiet",
 		"--print", "filename",
 		"--no-mtime",
+		"-o", `"%(playlist_index&[{}] |)s%(uploader)s - %(title)s [%(id)s].%(ext)s"`,
 	}
 	flags := append(d.Flags, extraflags...)
 	if !d.Dry {
