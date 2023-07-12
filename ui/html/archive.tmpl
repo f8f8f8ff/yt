@@ -1,9 +1,9 @@
 {{define "main"}}
 	<p><a href="/">home</a></p>
 	{{range .Files}}
-		<a href="{{.Name}}">{{.Name}}</a> ({{.Size}})
-		{{if eq true .Yt}}
-			<a href="{{.YtLink}}">[yt]</a>
+		<a href="{{.Path}}">{{.Name}}</a> ({{.Size}})
+		{{if eq "youtube" .Source.String}}
+			<a href="{{.ExtLink}}">[ext]</a>
 		{{end}}
 		<br>
 	{{end}}

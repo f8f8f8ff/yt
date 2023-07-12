@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"runtime/debug"
+	"yt/internal/dl"
 )
 
 func (app *application) serverError(w http.ResponseWriter, err error) {
@@ -23,4 +24,14 @@ func (app *application) clientErrorV(w http.ResponseWriter, status int, err erro
 
 func (app *application) notFound(w http.ResponseWriter) {
 	app.clientError(w, http.StatusNotFound)
+}
+
+func mediumFromString(m string) dl.Medium {
+	switch m {
+	case "audio":
+		return dl.MediumAudio
+	case "video":
+		return dl.MediumVideo
+	}
+	return dl.MediumUnknown
 }

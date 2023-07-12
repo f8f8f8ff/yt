@@ -2,6 +2,7 @@ package dirlist
 
 import (
 	"fmt"
+	"net/url"
 	"os"
 	"sort"
 	"time"
@@ -10,11 +11,11 @@ import (
 )
 
 type File struct {
-	Name   string
-	bytes  int64
-	time   time.Time
-	YtLink string
-	Yt     bool
+	Name    string
+	bytes   int64
+	time    time.Time
+	ExtLink string
+	Source  dl.Source
 }
 
 func (f *File) Size() string {
@@ -29,6 +30,10 @@ func (f *File) Size() string {
 		exp += 1
 	}
 	return fmt.Sprintf("%.1f %cB", float64(b)/float64(div), "kMGTPE"[exp])
+}
+
+func (f *File) Path() string {
+	return url.PathEscape(f.Name)
 }
 
 func Dir(path string) ([]File, error) {
@@ -51,8 +56,8 @@ func Dir(path string) ([]File, error) {
 		f.time = info.ModTime()
 		id, _, err := dl.IdFromName(f.Name)
 		if err == nil {
-			f.YtLink = dl.UrlFromId(id)
-			f.Yt = true
+			f.Source = dl.SourceFromId(id)
+			f.ExtLink = dl.UrlFromId(id)
 		}
 		files = append(files, f)
 	}

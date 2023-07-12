@@ -3,6 +3,7 @@ package main
 import (
 	"html/template"
 	"net/http"
+	_url "net/url"
 	_path "path"
 
 	"yt/internal/dirlist"
@@ -16,7 +17,7 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 			app.notFound(w)
 			return
 		}
-		app.download(w, r, url, "audio", false)
+		app.download(w, r, url, dl.MediumAudio, false)
 		return
 	}
 	files := []string{
@@ -50,11 +51,11 @@ func (app *application) getPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	url := r.PostForm.Get("url")
-	medium := r.PostForm.Get("medium")
+	medium := mediumFromString(r.PostForm.Get("medium"))
 	app.download(w, r, url, medium, true)
 }
 
-func (app *application) download(w http.ResponseWriter, r *http.Request, url, medium string, redirect bool) {
+func (app *application) download(w http.ResponseWriter, r *http.Request, url string, medium dl.Medium, redirect bool) {
 	app.infoLog.Printf("url: %v, medium: %v", url, medium)
 	var (
 		paths []string
@@ -69,12 +70,12 @@ func (app *application) download(w http.ResponseWriter, r *http.Request, url, me
 		http.Redirect(w, r, "/dl", http.StatusSeeOther)
 		return
 	}
-	path := paths[0]
-	w.Header().Set("Content-Disposition", "attachment; filename="+path)
+	dlPath := _url.PathEscape(paths[0])
+	w.Header().Set("Content-Disposition", "attachment; filename="+dlPath)
 	if redirect {
 		w.Header().Set("Location", "/")
 	}
-	fp := _path.Join(app.dlmanager.Dir(), path)
+	fp := _path.Join(app.dlmanager.Dir(), dlPath)
 	http.ServeFile(w, r, fp)
 }
 

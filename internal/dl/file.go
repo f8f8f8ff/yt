@@ -1,7 +1,6 @@
 package dl
 
 import (
-	"errors"
 	"os"
 )
 
@@ -12,6 +11,16 @@ const (
 	SourceYoutube
 	SourceSoundcloud
 )
+
+func (s Source) String() string {
+	switch s {
+	case SourceYoutube:
+		return "youtube"
+	case SourceSoundcloud:
+		return "soundcloud"
+	}
+	return "unknown"
+}
 
 type Medium int
 
@@ -60,15 +69,7 @@ func fileFromPath(path string) (*File, error) {
 		return nil, err
 	}
 
-	var source Source
-	switch len(id) {
-	case 10:
-		source = SourceSoundcloud
-	case 11:
-		source = SourceYoutube
-	default:
-		return nil, errors.New("could not determine source from id length")
-	}
+	source := SourceFromId(id)
 
 	// determine medium by file extension
 	var medium Medium

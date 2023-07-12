@@ -16,7 +16,7 @@ func TestManager_Get(t *testing.T) {
 	}
 	type args struct {
 		url    string
-		medium string
+		medium Medium
 	}
 	tests := []struct {
 		name    string
@@ -28,7 +28,7 @@ func TestManager_Get(t *testing.T) {
 		{
 			"single video",
 			&m,
-			args{"https://www.youtube.com/watch?v=sCNj0WMBkrs", "video"},
+			args{"https://www.youtube.com/watch?v=sCNj0WMBkrs", MediumVideo},
 			[]string{"The Epic Battle： Jesus vs Cyborg Satan [sCNj0WMBkrs].webm"},
 			false,
 		},

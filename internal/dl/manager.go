@@ -24,7 +24,7 @@ var DefaultManager Manager = Manager{
 // returns the path to a downloaded youtube video by its url
 // downloads the video if not existent
 // TODO only returns the path of the first video downloaded
-func (m *Manager) Get(url, medium string) ([]string, error) {
+func (m *Manager) Get(url string, medium Medium) ([]string, error) {
 	m.log("requesting: %v as %v", url, medium)
 	id, err := IdFromUrl(url)
 	if errors.Is(err, BadUrl) {
@@ -33,15 +33,13 @@ func (m *Manager) Get(url, medium string) ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	switch medium {
-	case "video":
-		id += "/v"
-	case "audio":
-		id += "/a"
-	default:
+
+	if medium == MediumUnknown {
 		return nil, BadMedium
 	}
-	file := m.Files[id]
+	key := id + medium.Suffix()
+
+	file := m.Files[key]
 	paths := []string{}
 	if file != nil {
 		paths = append(paths, file.path)
@@ -58,16 +56,16 @@ func (m *Manager) Get(url, medium string) ([]string, error) {
 	return paths, nil
 }
 
-func (m *Manager) DownloadVideo(url, medium string) ([]*File, error) {
+func (m *Manager) DownloadVideo(url string, medium Medium) ([]*File, error) {
 	m.log("downloading %v as %v", url, medium)
 	var (
 		paths []string
 		err   error
 	)
 	switch medium {
-	case "video":
+	case MediumVideo:
 		paths, err = m.Downloader.Video(url)
-	case "audio":
+	case MediumAudio:
 		paths, err = m.Downloader.Audio(url)
 	default:
 		return nil, BadMedium

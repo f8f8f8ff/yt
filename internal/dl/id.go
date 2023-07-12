@@ -14,8 +14,16 @@ func PartialUrlToYoutube(uri string) (string, error) {
 	return url, nil
 }
 
+// returns external url from id
+// need more work to get soundcloud link from id
+// https://stackoverflow.com/questions/29495775/get-soundcloud-url-for-a-track-using-only-its-id
 func UrlFromId(id string) string {
-	return fmt.Sprintf("https://youtube.com/watch?v=%v", id)
+	source := SourceFromId(id)
+	switch source {
+	case SourceYoutube:
+		return fmt.Sprintf("https://youtube.com/watch?v=%v", id)
+	}
+	return ""
 }
 
 func IdFromUrl(url string) (string, error) {
@@ -34,6 +42,16 @@ func IdFromName(name string) (id, format string, err error) {
 	id = match[1]
 	format = match[2]
 	return id, format, nil
+}
+
+func SourceFromId(id string) Source {
+	switch len(id) {
+	case 10:
+		return SourceSoundcloud
+	case 11:
+		return SourceYoutube
+	}
+	return SourceUnknown
 }
 
 var idUrlRegexp *regexp.Regexp
