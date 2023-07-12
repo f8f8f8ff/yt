@@ -105,21 +105,35 @@ func Test_fileFromPath(t *testing.T) {
 			".webm",
 			args{"The Epic Battle： Jesus vs Cyborg Satan [sCNj0WMBkrs].webm"},
 			&File{
-				id:     "sCNj0WMBkrs/v",
+				id:     "sCNj0WMBkrs",
 				format: "webm",
-				medium: "video",
+				medium: MediumVideo,
 				path:   "The Epic Battle： Jesus vs Cyborg Satan [sCNj0WMBkrs].webm",
+				source: SourceYoutube,
 			},
 			false,
 		},
 		{
-			".webm",
+			".mp3",
 			args{"song [dQw4w9WgXcQ].mp3"},
 			&File{
-				id:     "dQw4w9WgXcQ/a",
+				id:     "dQw4w9WgXcQ",
 				format: "mp3",
-				medium: "audio",
+				medium: MediumAudio,
 				path:   "song [dQw4w9WgXcQ].mp3",
+				source: SourceYoutube,
+			},
+			false,
+		},
+		{
+			"mp3 soundcloud",
+			args{"Theprivilegeoflovingyou [1444424830].mp3"},
+			&File{
+				id:     "1444424830",
+				format: "mp3",
+				medium: MediumAudio,
+				path:   "Theprivilegeoflovingyou [1444424830].mp3",
+				source: SourceSoundcloud,
 			},
 			false,
 		},
@@ -141,16 +155,25 @@ func Test_fileFromPath(t *testing.T) {
 func Test_LoadFiles(t *testing.T) {
 	want := make(map[string]*File)
 	want["dQw4w9WgXcQ/v"] = &File{
-		id:     "dQw4w9WgXcQ/v",
+		id:     "dQw4w9WgXcQ",
 		format: "webm",
-		medium: "video",
+		medium: MediumVideo,
 		path:   "fake video [dQw4w9WgXcQ].webm",
+		source: SourceYoutube,
 	}
 	want["NRHVzbJVx8I/a"] = &File{
-		id:     "NRHVzbJVx8I/a",
+		id:     "NRHVzbJVx8I",
 		format: "mp3",
-		medium: "audio",
+		medium: MediumAudio,
 		path:   "unreal song [NRHVzbJVx8I].mp3",
+		source: SourceYoutube,
+	}
+	want["1444424830/a"] = &File{
+		id:     "1444424830",
+		format: "mp3",
+		medium: MediumAudio,
+		path:   "Theprivilegeoflovingyou [1444424830].mp3",
+		source: SourceSoundcloud,
 	}
 	got, err := LoadFiles("testdata")
 	if err != nil {

@@ -42,5 +42,5 @@ var idPathRegexp *regexp.Regexp
 func init() {
 	// https://stackoverflow.com/questions/3452546/how-do-i-get-the-youtube-video-id-from-a-url
 	idUrlRegexp = regexp.MustCompile(`^.*(?:(?:youtu\.be\/|v\/|vi\/|u\/\w\/|embed\/|shorts\/)|(?:(?:watch)?\?v(?:i)?=|\&v(?:i)?=))([^#\&\?]*).*`)
-	idPathRegexp = regexp.MustCompile(`.+\[([^#\&\?]{11})\]\.(.*$)`)
+	idPathRegexp = regexp.MustCompile(`.+\[([^#\&\?]{10,11})\]\.(.*$)`)
 }

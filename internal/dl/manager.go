@@ -3,15 +3,7 @@ package dl
 import (
 	"errors"
 	"log"
-	"os"
 )
-
-type File struct {
-	id     string
-	format string
-	medium string
-	path   string
-}
 
 type Manager struct {
 	Downloader Downloader
@@ -97,50 +89,7 @@ func (m *Manager) DownloadVideo(url, medium string) ([]*File, error) {
 
 func (m *Manager) addFile(f *File) {
 	m.log("adding file %v", f)
-	m.Files[f.id] = f
-}
-
-// should return a file struct with "youtubeid/a" or /v for audio or video
-func fileFromPath(path string) (*File, error) {
-	id, format, err := IdFromName(path)
-	if err != nil {
-		return nil, err
-	}
-	var medium string
-	switch format {
-	case "webm", "mp4", "mov", "flv":
-		id += "/v"
-		medium = "video"
-	case "mp3":
-		id += "/a"
-		medium = "audio"
-	default:
-		return nil, BadMedium
-	}
-	return &File{
-		id:     id,
-		path:   path,
-		format: format,
-		medium: medium,
-	}, nil
-}
-
-func LoadFiles(dir string) (map[string]*File, error) {
-	files, err := os.ReadDir(dir)
-	if err != nil {
-		return nil, err
-	}
-	m := make(map[string]*File)
-	for _, file := range files {
-		if file.IsDir() {
-			continue
-		}
-		f, err := fileFromPath(file.Name())
-		if err == nil {
-			m[f.id] = f
-		}
-	}
-	return m, nil
+	m.Files[f.Key()] = f
 }
 
 func (m *Manager) Dir() string {
