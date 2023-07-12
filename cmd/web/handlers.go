@@ -23,6 +23,7 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 	files := []string{
 		"./ui/html/home.tmpl",
 		"./ui/html/form.tmpl",
+		"./ui/html/info.tmpl",
 	}
 	ts, err := template.ParseFiles(files...)
 	if err != nil {
