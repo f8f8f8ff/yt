@@ -10,5 +10,8 @@ func (app *application) routes() *http.ServeMux {
 	mux.Handle("/dl/", app.logRequest(http.HandlerFunc(app.dl)))
 	mux.Handle("/zip", app.logRequest(http.HandlerFunc(app.zip)))
 
+	fs := http.FileServer(http.Dir("ui/static"))
+	mux.Handle("/static/", http.StripPrefix("/static/", fs))
+
 	return mux
 }

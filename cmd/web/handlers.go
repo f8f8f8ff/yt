@@ -69,7 +69,6 @@ func (app *application) download(w http.ResponseWriter, r *http.Request, url str
 		return
 	}
 	if len(paths) > 1 {
-		// TODO zip paths together?
 		http.Redirect(w, r, "/dl", http.StatusSeeOther)
 		return
 	}
@@ -127,13 +126,17 @@ func (app *application) zipPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	files := r.PostForm["files"]
+	// TODO if single file is selected, don't zip
+	if len(files) < 2 {
+		http.Redirect(w, r, "/dl", http.StatusSeeOther)
+		return
+	}
 	for i, f := range files {
 		files[i], err = _url.PathUnescape(f)
 		if err != nil {
 			app.serverError(w, err)
 		}
 	}
-	app.infoLog.Println(len(files), files)
 	z, err := app.dlmanager.Zip(files...)
 	if err != nil {
 		app.serverError(w, err)
