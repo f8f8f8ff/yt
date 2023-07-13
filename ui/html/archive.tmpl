@@ -1,10 +1,16 @@
 {{define "main"}}
 	<p><a href="/">home</a></p>
-	{{range .Files}}
-		<a href="{{.Path}}">{{.Name}}</a> ({{.Size}})
-		{{if eq "youtube" .Source.String}}
-			<a href="{{.ExtLink}}">[ext]</a>
+	<form action='/zip' method='POST' autocomplete='off'>
+		<p><input type='submit' value='download'></p>
+		{{range .Files}}
+			<input type='checkbox' name='files' value='{{.Path}}' />
+			<label for='{{.Path}}'>
+			<a href="{{.Path}}">{{.Name}}</a> ({{.Size}})
+			{{if eq "youtube" .Source.String}}
+				<a href="{{.ExtLink}}">[ext]</a>
+			{{end}}
+			</label>
+			<br>
 		{{end}}
-		<br>
-	{{end}}
+	</form>
 {{end}}

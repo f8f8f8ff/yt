@@ -2,13 +2,20 @@ package dl
 
 import (
 	"errors"
+	"fmt"
 	"log"
+	"os"
+	"path"
+	"time"
+
+	"yt/internal/zip"
 )
 
 type Manager struct {
 	Downloader Downloader
 	Files      map[string]*File
 	Logger     *log.Logger
+	ZipDir     string
 }
 
 var DefaultManager Manager = Manager{
@@ -19,6 +26,7 @@ var DefaultManager Manager = Manager{
 	},
 	Files:  map[string]*File{},
 	Logger: nil,
+	ZipDir: "./tmp/zip/",
 }
 
 // returns the path to a downloaded youtube video by its url
@@ -100,4 +108,26 @@ func (m *Manager) log(format string, a ...any) {
 	}
 	format = "dl.Manager: " + format
 	m.Logger.Printf(format, a...)
+}
+
+func (m *Manager) Zip(files ...string) (string, error) {
+	now := time.Now()
+	outPath := fmt.Sprintf("%v_ytdl_%v_files.zip", now.Format("060102150405"), len(files))
+	outPath = path.Join(m.ZipDir, outPath)
+	m.log("zipping to %v: %v", outPath, files)
+	w, err := os.Create(outPath)
+	if err != nil {
+		return "", err
+	}
+	defer w.Close()
+
+	for i, f := range files {
+		files[i] = path.Join(m.Dir(), f)
+	}
+
+	err = zip.ZipFiles(w, files...)
+	if err != nil {
+		return "", err
+	}
+	return outPath, nil
 }

@@ -19,6 +19,7 @@ func main() {
 	addr := flag.String("addr", ":4000", "http network address")
 	dry := flag.Bool("dry", false, "disables downloading content")
 	dir := flag.String("dir", "./tmp/", "directory to download content")
+	zipDir := flag.String("zip", "./tmp/zip/", "directory to store zip files of content")
 	flag.Parse()
 
 	infoLog := log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
@@ -26,6 +27,7 @@ func main() {
 
 	m := dl.DefaultManager
 	m.Logger = infoLog
+	m.ZipDir = *zipDir
 	m.Downloader.Dir = *dir
 	m.Downloader.Logger = infoLog
 	files, err := dl.LoadFiles(*dir)

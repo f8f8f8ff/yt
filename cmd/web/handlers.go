@@ -4,6 +4,7 @@ import (
 	"html/template"
 	"net/http"
 	_url "net/url"
+	"path"
 	_path "path"
 
 	"yt/internal/dirlist"
@@ -109,4 +110,34 @@ func (app *application) dl(w http.ResponseWriter, r *http.Request) {
 		app.serverError(w, err)
 		return
 	}
+}
+
+func (app *application) zip(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodPost && r.URL.Path == "/zip" {
+		app.zipPost(w, r)
+		return
+	}
+	app.clientError(w, http.StatusMethodNotAllowed)
+}
+
+func (app *application) zipPost(w http.ResponseWriter, r *http.Request) {
+	err := r.ParseForm()
+	if err != nil {
+		app.clientError(w, http.StatusBadRequest)
+		return
+	}
+	files := r.PostForm["files"]
+	for i, f := range files {
+		files[i], err = _url.PathUnescape(f)
+		if err != nil {
+			app.serverError(w, err)
+		}
+	}
+	app.infoLog.Println(len(files), files)
+	z, err := app.dlmanager.Zip(files...)
+	if err != nil {
+		app.serverError(w, err)
+	}
+	w.Header().Set("Content-Disposition", "attachment; filename="+path.Base(z))
+	http.ServeFile(w, r, z)
 }

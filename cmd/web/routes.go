@@ -8,6 +8,7 @@ func (app *application) routes() *http.ServeMux {
 	mux.Handle("/", app.logRequest(http.HandlerFunc(app.home)))
 	mux.Handle("/get", app.logRequest(http.HandlerFunc(app.get)))
 	mux.Handle("/dl/", app.logRequest(http.HandlerFunc(app.dl)))
+	mux.Handle("/zip", app.logRequest(http.HandlerFunc(app.zip)))
 
 	return mux
 }
