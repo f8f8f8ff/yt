@@ -1,6 +1,7 @@
 package dl
 
 import (
+	"crypto/sha256"
 	"errors"
 	"fmt"
 	"log"
@@ -14,6 +15,7 @@ import (
 type Manager struct {
 	Downloader Downloader
 	Files      map[string]*File
+	Zips       map[string]string // map hash of filenames to filename of zip
 	Logger     *log.Logger
 	ZipDir     string
 }
@@ -25,13 +27,13 @@ var DefaultManager Manager = Manager{
 		Dir:   "./tmp/",
 	},
 	Files:  map[string]*File{},
+	Zips:   map[string]string{},
 	Logger: nil,
 	ZipDir: "./tmp/zip/",
 }
 
 // returns the path to a downloaded youtube video by its url
 // downloads the video if not existent
-// TODO only returns the path of the first video downloaded
 func (m *Manager) Get(url string, medium Medium) ([]string, error) {
 	m.log("requesting: %v as %v", url, medium)
 	id, err := IdFromUrl(url)
@@ -111,8 +113,20 @@ func (m *Manager) log(format string, a ...any) {
 }
 
 func (m *Manager) Zip(files ...string) (string, error) {
+	h := sha256.New()
+	for i, f := range files {
+		h.Write([]byte(f))
+		files[i] = path.Join(m.Dir(), f)
+	}
+	sum := string(h.Sum(nil))
+	outPath := m.Zips[sum]
+	if outPath != "" {
+		m.log("already found zip using hash %v", outPath)
+		return outPath, nil
+	}
+
 	now := time.Now()
-	outPath := fmt.Sprintf("%v_ytdl_%v_files.zip", now.Format("060102150405"), len(files))
+	outPath = fmt.Sprintf("%v_ytdl_%v_files.zip", now.Format("060102150405"), len(files))
 	outPath = path.Join(m.ZipDir, outPath)
 	m.log("zipping to %v: %v", outPath, files)
 	w, err := os.Create(outPath)
@@ -121,13 +135,11 @@ func (m *Manager) Zip(files ...string) (string, error) {
 	}
 	defer w.Close()
 
-	for i, f := range files {
-		files[i] = path.Join(m.Dir(), f)
-	}
-
 	err = zip.ZipFiles(w, files...)
 	if err != nil {
 		return "", err
 	}
+
+	m.Zips[sum] = outPath
 	return outPath, nil
 }
