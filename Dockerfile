@@ -23,4 +23,4 @@ COPY docker-entrypoint.sh ./docker-entrypoint.sh
 COPY ui ./ui
 
 EXPOSE 8080
-ENTRYPOINT ["./docker-entrypoint.sh", "-addr=:8080", "-dir=/dl" ]
+ENTRYPOINT ["./docker-entrypoint.sh", "-addr=:8080", "-dir=/dl", "-zip=/dl/zip" ]
